@@ -26,6 +26,7 @@ impl<'info> CheckWinner<'info> {
         let signer: Pubkey = self.signer.key();
         let bet: &Account<'info, Bet> = &self.bet;
         let clock = Clock::get()?;
+        // println!("the price is ({} ± {})", &clock);
         require!(clock.unix_timestamp >= bet.end_time, Errors::BetNotEndedYet);
         require!(
             signer == bet.maker || bet.opponent.map_or(false, |opponent| signer == opponent),
