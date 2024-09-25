@@ -18,6 +18,7 @@ pub struct Bet {
     pub vault_pool_bump: u8,
     pub opponent_deposit: u64, //in lamports should store
     pub winner: Option<Pubkey>,
+    pub pyth_price_account: Pubkey
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]

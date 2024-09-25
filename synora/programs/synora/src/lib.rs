@@ -29,6 +29,7 @@ pub mod prediction_market {
         start_time: i64,
         end_time: i64,
         amount: u64,
+        pyth_price_account: Pubkey,
     ) -> Result<()> {
         ctx.accounts.create_bet(
             token_mint,
@@ -41,6 +42,7 @@ pub mod prediction_market {
             amount,
             seed,
             &ctx.bumps,
+            pyth_price_account, // pass this account
         )
     }
 
