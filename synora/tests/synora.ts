@@ -1,12 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { Synora } from "../target/types/synora";
+import { PredictionMarket } from "../target/types/prediction_market";
 
 describe("synora", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.Synora as Program<Synora>;
+  const program = anchor.workspace.Synora as Program<PredictionMarket>;
 
   it("Is initialized!", async () => {
     // Add your test here.
