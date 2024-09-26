@@ -2,8 +2,6 @@ use anchor_lang::{
     prelude::*,
     system_program::{transfer, Transfer},
 };
-use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
-
 
 use crate::{errors::Errors, state::Bet, BetStatus, Odds, User};
 
@@ -49,14 +47,21 @@ impl<'info> CreateBet<'info> {
         amount: u64,
         seed: u64,
         bumps: &CreateBetBumps,
-        pyth_price_account: Pubkey,
     ) -> Result<()> {
         //calculate the depositing amount
         require!(maker_odds == 1 || opponent_odds == 1, Errors::InvalidOdds);
+
+        let clock = Clock::get()?;
+        require!(deadline_to_join > clock.unix_timestamp, Errors::InvalidDeadline);
+        require!(start_time > deadline_to_join, Errors::InvalidStartTime);
+        require!(end_time > start_time, Errors::InvalidEndTime);
+        require!(amount > 0, Errors::InsufficientFunds);
+
         let odds = Odds {
             maker_odds,
             opponent_odds,
         };
+        
         let opponent_deposit = self.calculate_opponent_deposit(amount, &odds);
         self.bet.set_inner(Bet {
             maker: self.maker.key(),
@@ -75,7 +80,6 @@ impl<'info> CreateBet<'info> {
             vault_pool_bump: bumps.vault_pool,
             opponent_deposit, //sol in lamports
             winner: None,
-            pyth_price_account,
         });
 
         let user = &mut self.user_account;

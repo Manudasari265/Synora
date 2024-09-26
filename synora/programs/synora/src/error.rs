@@ -16,4 +16,20 @@ pub enum Errors {
     BetNotEndedYet,
     #[msg("The bet has not been resolved yet. Please wait until the bet is completed.")]
     BetNotResolvedYet,
+    #[msg("Invalid fee percentage")]
+    InvalidFeePercentage,
+    #[msg("Insufficient funds in vault")]
+    InsufficientFunds,
+    #[msg("Failed to transfer funds")]
+    TransferFailed,
+    #[msg("Invalid bet status")]
+    InvalidBetStatus,
+    #[msg("Price feed error")]
+    PriceFeedError,
+    #[msg("Invalid start time")]
+    InvalidStartTime,
+    #[msg("Invalid end time")]
+    InvalidEndTime,
+    #[msg("Invalid deadline")]
+    InvalidDeadline,
 }
