@@ -6,6 +6,8 @@ import { assert } from "chai";
 
 //* swithcboard sol/usd devnet price data feed ID = "8g6zZtZFLJCRBm85rZbMws3ce2oqzzDKEGBj9wQGp1kY"
 
+const commitment: any = "confirmed";
+
 describe("capstone-project", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -22,7 +24,15 @@ describe("capstone-project", () => {
 
   // defining the constants
   const betSeed = new anchor.BN(Date.now());
-  
+  const tokenMint = anchor.web3.Keypair.generate().publicKey;
+  const makerOdds = new anchor.BN(2);
+  const opponentOdds = new anchor.BN(3);
+  const pricePrediction = new anchor.BN(1000);
+  const deadlineToJoin = new anchor.BN(Date.now() + 3600000); // 1 hour from now
+  const startTime = new anchor.BN(Date.now() + 7200000); // 2 hours from now
+  const endTime = new anchor.BN(Date.now() + 10800000); // 3 hours from now
+  const amount = new anchor.BN(100000000); // 0.1 SOL
+  const fees = 100; // 1%
 
   const [housePda, housePdaBump] = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("house"), admin.publicKey.toBuffer()],
@@ -45,4 +55,45 @@ describe("capstone-project", () => {
     program.programId
   );
   
+  // Airdrop sol to admin, maker, betTaker
+  it("Airdrop some sol", async () => {
+    await Promise.all([ admin, maker, betTaker].map(async (k) => {
+      return await anchor.getProvider().connection.requestAirdrop(k.publicKey, 100 * anchor.web3.LAMPORTS_PER_SOL)
+    })).then(confirmTxs);
+  });
+
+  it("Initialize the protocol", async () => {
+    const tx = await program.methods.initializeProtocol(fees)
+      .accountsPartial({
+        admin: admin.publicKey,
+        house: housePda,
+        treasury: treasuryPda,
+      })
+      .signers([admin])
+      .rpc();
+    
+      console.log("Protocol Init Transaction Signature - ", tx);
+
+      await confirmTx(tx);
+
+      const initializedBetHouse = await program.account.house.fetch(housePda);
+
+      assert.equal(initializedBetHouse.admin.toBase58(), admin.publicKey.toBase58());
+      assert.equal(initializedBetHouse.protoclFees, fees);
+  })
 });
+
+// Helpers
+const confirmTx = async (signature: string) => {
+  const latestBlockhash = await anchor.getProvider().connection.getLatestBlockhash();
+  await anchor.getProvider().connection.confirmTransaction(
+    {
+      signature,
+      ...latestBlockhash,
+    },
+    commitment
+  )
+}
+const confirmTxs = async (signatures: string[]) => {
+  await Promise.all(signatures.map(confirmTx))
+}

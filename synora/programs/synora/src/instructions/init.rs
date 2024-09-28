@@ -27,7 +27,7 @@ impl<'info> Init<'info> {
     pub fn init(&mut self, fees: i16, bumps: &InitBumps) -> Result<()> {
         self.house.set_inner(House {
             admin: self.admin.key(),
-            protocl_fees: fees,
+            protocol_fees: fees,
             bump: bumps.house,
             treasury_bump: bumps.treasury,
         });

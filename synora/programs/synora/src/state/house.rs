@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct House {
     pub admin: Pubkey,
-    pub protocl_fees: i16,
+    pub protocol_fees: i16,
     pub bump: u8,
     pub treasury_bump: u8,
 }
