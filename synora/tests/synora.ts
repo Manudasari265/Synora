@@ -214,7 +214,41 @@ describe("capstone-project", () => {
       assert.ok(betAccount.makerDeposit.eq(amount));
       assert.equal(betAccount.status, { findingOpponent: {} });
   })
+  
+  // Accepting the second created bet after cancelling the first bet
+  it("Accepting the bet", async () => {
+    const takerBalanceBefore = await connection.getBalance(betTaker.publicKey);
+    const vaultBalanceBefore = await connection.getBalance(vaultPoolPda);
 
+    const tx = await program.methods.acceptBet(betSeed).accountsPartial({
+      opponent: betTaker.publicKey,
+      maker: maker.publicKey,
+      bet: betPda,
+      vaultPool: vaultPoolPda,
+      userAccount: userAccountPda,
+      systemProgram: SystemProgram.programId, 
+    })
+    .signers([maker])
+    .rpc();
+
+    console.log("Accepting bet Transaction Signature - ", tx);
+
+    await confirmTx(tx);
+
+    const vaultBalanceAfter = await connection.getBalance(vaultPoolPda);
+    const takerBalanceAfter = await connection.getBalance(betTaker.publicKey);
+    const treasuryBalanceAfter = await connection.getBalance(treasuryPda);
+    const betAccount = await program.account.bet.fetch(betPda);
+    
+    assert.equal(betAccount.opponent.toBase58(), betTaker.publicKey.toBase58());
+    assert.equal(betAccount.status.waitingToStart != undefined, true);
+
+    const totalBetAmount = amount.toNumber() * 2;
+    const feesAmount = totalBetAmount * (fees / 10000);
+    assert.equal(vaultBalanceAfter, vaultBalanceBefore + amount.toNumber() - feesAmount);
+    assert.isAtMost(takerBalanceAfter, takerBalanceBefore - amount.toNumber());
+    assert.equal(treasuryBalanceAfter, feesAmount);
+  })
 });
 
 // Helpers
