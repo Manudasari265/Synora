@@ -3,10 +3,11 @@ import { Program } from "@coral-xyz/anchor";
 import { PredictionMarket } from "../target/types/prediction_market";
 import { Keypair, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { assert } from "chai";
+import { Commitment } from "@solana/web3.js"
 
 //* swithcboard sol/usd devnet price data feed ID = "8g6zZtZFLJCRBm85rZbMws3ce2oqzzDKEGBj9wQGp1kY"
 
-const commitment: any = "confirmed";
+const commitment: Commitment = "confirmed";
 
 describe("capstone-project", () => {
   // Configure the client to use the local cluster.
@@ -129,6 +130,91 @@ describe("capstone-project", () => {
       assert.ok(betAccount.makerDeposit.eq(amount));
       assert.equal(betAccount.status, { findingOpponent: {} });
   })
+
+  // Cancelling the created bet for testing 
+  it("Cancel the bet", async () => {
+    const vaultBalanceBefore = await connection.getBalance(vaultPoolPda);
+    const makerBalanceBefore = await connection.getBalance(maker.publicKey);
+
+    // Fetch the bet account before cancellation
+    const betAccountBefore = await program.account.bet.fetch(betPda);
+    assert.equal(betAccountBefore.status.findingOpponent, {}, "Bet status should be 'findingOpponent' before cancellation");
+
+    const tx = await program.methods.cancelBet(betSeed)
+      .accountsPartial({
+        maker: maker.publicKey,
+        bet: betPda,
+        vaultPool: vaultPoolPda,
+        userAccount: userAccountPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([maker])
+      .rpc();
+    
+      console.log("Canceling bet Transaction Signature - ", tx);
+
+      await confirmTx(tx);
+      // Fetch the bet account after cancellation
+      const betAccountAfter = await program.account.bet.fetch(betPda);
+    
+      // Check if the bet status is updated or not
+      assert.equal(betAccountAfter.status.completed, {}, "Bet status should be 'completed' after cancellation");
+
+      // Check if the funds have been returned to the maker
+      const vaultBalanceAfter = await connection.getBalance(vaultPoolPda);
+      const makerBalanceAfter = await connection.getBalance(maker.publicKey);
+      assert.equal(vaultBalanceAfter, 0);
+      assert.equal(makerBalanceAfter, 100 * anchor.web3.LAMPORTS_PER_SOL);
+  })
+
+  // Creating another bet after cancellation of the first bet
+  //TODO: feedInjector should be added to check the real-time data in lib.rs, bet.rs, create_bet.rs and resolve_bet.rs
+  it("Create a bet", async () => {
+    const makerBalanceBefore = await connection.getBalance(maker.publicKey);
+
+    const tx = await program.methods.createBet(
+      betSeed, 
+      tokenMint,
+      makerOdds,
+      opponentOdds,
+      pricePrediction,
+      deadlineToJoin,
+      startTime,
+      endTime,
+      amount).accountsPartial({
+        maker: maker.publicKey,
+        bet: betPda,
+        vaultPool: vaultPoolPda,
+        userAccount: userAccountPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([maker])
+      .rpc();
+
+      console.log("Bet creation Transaction Signature - ", tx);
+
+      await confirmTx(tx);
+
+      // Fetch the bet account and assert its data
+      const betAccount = await program.account.bet.fetch(betPda);
+      const vaultBalance = await connection.getBalance(vaultPoolPda);
+      const makerBalanceAfter = await connection.getBalance(maker.publicKey);
+
+      assert.equal(vaultBalance, amount.toNumber());
+      assert.isAtMost(makerBalanceAfter, makerBalanceBefore - amount.toNumber());
+
+      assert.ok(betAccount.maker.equals(maker.publicKey));
+      assert.ok(betAccount.tokenMint.equals(tokenMint));
+      assert.ok(betAccount.odds.makerOdds.eq(makerOdds));
+      assert.ok(betAccount.odds.opponentOdds.eq(opponentOdds));
+      assert.ok(betAccount.pricePrediction.eq(pricePrediction));
+      assert.ok(betAccount.deadlineToJoin.eq(deadlineToJoin));
+      assert.ok(betAccount.startTime.eq(startTime));
+      assert.ok(betAccount.endTime.eq(endTime));
+      assert.ok(betAccount.makerDeposit.eq(amount));
+      assert.equal(betAccount.status, { findingOpponent: {} });
+  })
+
 });
 
 // Helpers
