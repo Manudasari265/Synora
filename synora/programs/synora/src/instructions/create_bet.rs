@@ -47,6 +47,7 @@ impl<'info> CreateBet<'info> {
         amount: u64,
         seed: u64,
         bumps: &CreateBetBumps,
+        //TODO - feed_injector should be assigned here
     ) -> Result<()> {
         //calculate the depositing amount
         require!(maker_odds == 1 || opponent_odds == 1, Errors::InvalidOdds);

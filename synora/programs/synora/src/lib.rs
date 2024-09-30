@@ -41,6 +41,7 @@ pub mod prediction_market {
             amount,
             seed,
             &ctx.bumps,
+            // pass switchboard here
         )
     }
 
@@ -50,7 +51,8 @@ pub mod prediction_market {
     pub fn cancel_bet(ctx: Context<CancelBet>, _seed: u64) -> Result<()> {
         ctx.accounts.cancel_bet()
     }
-
+    
+    //TODO - feedInjector invocation should be implemented here
     pub fn check_winner(ctx:Context<CheckWinner>,_seed:u64)->Result<()>{
         ctx.accounts.check_winner()
     }

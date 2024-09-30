@@ -18,6 +18,7 @@ pub struct Bet {
     pub vault_pool_bump: u8,
     pub opponent_deposit: u64, //in lamports should store
     pub winner: Option<Pubkey>,
+    //TODO - feed_injector constant should be defined here
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
