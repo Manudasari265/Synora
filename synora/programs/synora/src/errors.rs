@@ -32,4 +32,16 @@ pub enum Errors {
     InvalidEndTime,
     #[msg("Invalid deadline")]
     InvalidDeadline,
+    #[msg("Bet is already resolved")]
+    BetAlreadyResolved,
+    #[msg("Bet not accepted")]
+    BetNotAccepted,
+    #[msg("Resolver Feed does not match")]
+    MismatchFeed,
+    #[msg("Switchbaord: NoValueFound")]
+    NoValueFound,
+    #[msg("Switchbaord: NoFeedData")]
+    NoFeedData,
+    #[msg("Switchbaord: PriceConversionOverflow")]
+    PriceConversionOverflow,
 }

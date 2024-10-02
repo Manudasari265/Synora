@@ -41,6 +41,7 @@ impl<'info> CreateBet<'info> {
         maker_odds: u64,
         opponent_odds: u64,
         price_prediction: i64,
+        creator_estimate: bool, //TODO - should be added to the test cases
         deadline_to_join: i64,
         start_time: i64,
         end_time: i64,
@@ -48,6 +49,7 @@ impl<'info> CreateBet<'info> {
         seed: u64,
         bumps: &CreateBetBumps,
         //TODO - feed_injector should be assigned here
+        feed_injector: Pubkey, //TODO - should be added to the test cases
     ) -> Result<()> {
         //calculate the depositing amount
         require!(maker_odds == 1 || opponent_odds == 1, Errors::InvalidOdds);
@@ -71,6 +73,7 @@ impl<'info> CreateBet<'info> {
             odds,
             status: BetStatus::FindingOpponent,
             price_prediction,
+            creator_estimate,
             deadline_to_join,
             start_time,
             end_time,
@@ -81,6 +84,7 @@ impl<'info> CreateBet<'info> {
             vault_pool_bump: bumps.vault_pool,
             opponent_deposit, //sol in lamports
             winner: None,
+            feed_injector, //TODO - should be added to the test cases
         });
 
         let user = &mut self.user_account;
