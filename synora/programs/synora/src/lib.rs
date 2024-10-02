@@ -25,16 +25,19 @@ pub mod prediction_market {
         maker_odds: u64,
         opponent_odds: u64,
         price_prediction: i64,
+        creator_estimate: bool, //TODO - should be added to the test cases
         deadline_to_join: i64,
         start_time: i64,
         end_time: i64,
         amount: u64,
+        feed_injector: Pubkey, //TODO - should be added to the test cases 
     ) -> Result<()> {
         ctx.accounts.create_bet(
             token_mint,
             maker_odds,
             opponent_odds,
             price_prediction,
+            creator_estimate, //TODO - should be added to the test cases
             deadline_to_join,
             start_time,
             end_time,
@@ -42,6 +45,7 @@ pub mod prediction_market {
             seed,
             &ctx.bumps,
             // pass switchboard here
+            feed_injector, //TODO - should be added to the test cases
         )
     }
 
@@ -52,9 +56,14 @@ pub mod prediction_market {
         ctx.accounts.cancel_bet()
     }
     
-    //TODO - feedInjector invocation should be implemented here
+    pub fn check_winner_dummy(ctx: Context<CheckWinner>, _seed: u64) -> Result<()> {
+        ctx.accounts.check_winner_bet_dummy()
+    }
+
+    //TODO - feedInjector invocation is be implemented here
     pub fn check_winner(ctx:Context<CheckWinner>,_seed:u64)->Result<()>{
-        ctx.accounts.check_winner()
+        let _ = ctx.accounts.check_winner();
+        ctx.accounts.check_winner_bet_switchboard()
     }
 
     pub fn claim_prize(ctx:Context<ClaimPrize>,_seed:u64)->Result<()>{
